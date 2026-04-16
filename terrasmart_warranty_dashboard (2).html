@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<style>html{width:100%!important;max-width:100%!important;}body{width:100%!important;max-width:none!important;}</style>
+<title>Terrasmart — Warranty Intelligence Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+  :root{--bg:#0c0f14;--surface:#141920;--surface2:#1a2230;--border:rgba(255,255,255,0.07);--green:#22c55e;--amber:#f59e0b;--red:#ef4444;--blue:#3b82f6;--slate:#94a3b8;--text:#e2e8f0;--muted:#64748b;--accent:#38bdf8;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html, body{width:100%;max-width:100%;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;overflow-x:hidden;}
+  * { box-sizing: border-box; }
+  header{display:flex;align-items:center;justify-content:space-between;padding:18px 24px 16px;border-bottom:1px solid var(--border);background:rgba(12,15,20,.95);position:sticky;top:0;z-index:100;backdrop-filter:blur(8px);width:100%;}
+  .logo{font-family:'DM Serif Display',serif;font-size:20px;color:var(--text);}
+  .logo span{color:var(--accent);}
+  .as-of{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);background:var(--surface);padding:4px 10px;border-radius:4px;border:1px solid var(--border);}
+  .tabs{display:flex;padding:0 24px;border-bottom:1px solid var(--border);background:var(--bg);width:100%;}
+  .tab{padding:12px 22px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;}
+  .tab:hover{color:var(--text);}
+  .tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+  .page{display:none;padding:20px 24px 48px;width:100%;}
+  .page.active{display:block;}
+  .narrative{background:linear-gradient(135deg,rgba(56,189,248,.08),rgba(56,189,248,.03));border:1px solid rgba(56,189,248,.18);border-left:3px solid var(--accent);padding:12px 18px;border-radius:0 6px 6px 0;font-size:13px;line-height:1.6;color:var(--text);margin-bottom:20px;}
+  .narrative strong{color:var(--accent);}
+  .method-panel{background:rgba(56,189,248,.04);border:1px solid rgba(56,189,248,.12);border-radius:6px;margin-bottom:20px;overflow:hidden;}
+  .method-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;cursor:pointer;user-select:none;}
+  .method-icon{width:18px;height:18px;border-radius:50%;background:rgba(56,189,248,.2);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--accent);font-weight:700;flex-shrink:0;}
+  .method-title{font-size:12px;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-left:10px;}
+  .method-toggle{font-size:11px;color:var(--muted);transition:transform .2s;}
+  .method-body{padding:0 16px 14px;font-size:12.5px;line-height:1.7;color:var(--slate);display:none;}
+  .method-body.open{display:block;}
+  .method-body p{margin-bottom:8px;}
+  .method-body strong{color:var(--text);}
+  .method-body .calc{font-family:'IBM Plex Mono',monospace;font-size:11px;background:rgba(255,255,255,.05);padding:4px 10px;border-radius:4px;border-left:2px solid var(--accent);display:inline-block;margin:4px 0;}
+  .method-body ul{padding-left:18px;margin-top:4px;}
+  .method-body li{margin-bottom:4px;}
+  .kpi-ribbon{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:22px;}
+  .kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px 18px 14px;position:relative;overflow:visible;}
+  .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:8px 8px 0 0;}
+  .kpi-card.green::before{background:var(--green);}
+  .kpi-card.amber::before{background:var(--amber);}
+  .kpi-card.red::before{background:var(--red);}
+  .kpi-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+  .kpi-info{width:15px;height:15px;border-radius:50%;background:rgba(100,116,139,.25);display:inline-flex;align-items:center;justify-content:center;font-size:9px;color:var(--muted);cursor:pointer;flex-shrink:0;transition:background .15s;}
+  .kpi-info:hover{background:rgba(56,189,248,.3);color:var(--accent);}
+  .kpi-value{font-family:'DM Serif Display',serif;font-size:30px;line-height:1;margin-bottom:6px;}
+  .kpi-card.green .kpi-value{color:var(--green);}
+  .kpi-card.amber .kpi-value{color:var(--amber);}
+  .kpi-card.red .kpi-value{color:var(--red);}
+  .kpi-sub{font-size:11px;color:var(--muted);}
+  .kpi-badge{display:inline-block;padding:2px 6px;border-radius:3px;font-size:10px;font-weight:600;margin-left:4px;font-family:'IBM Plex Mono',monospace;}
+  .badge-green{background:rgba(34,197,94,.15);color:var(--green);}
+  .badge-amber{background:rgba(245,158,11,.15);color:var(--amber);}
+  .badge-red{background:rgba(239,68,68,.15);color:var(--red);}
+  .kpi-popup{position:absolute;top:calc(100% + 8px);left:0;right:0;min-width:240px;background:var(--surface2);border:1px solid rgba(56,189,248,.25);border-radius:6px;padding:12px 14px;font-size:12px;line-height:1.6;color:var(--slate);z-index:300;display:none;box-shadow:0 8px 24px rgba(0,0,0,.5);}
+  .kpi-popup.visible{display:block;}
+  .kpi-popup strong{color:var(--text);}
+  .kpi-popup .calc{font-family:'IBM Plex Mono',monospace;font-size:10.5px;background:rgba(255,255,255,.06);padding:3px 8px;border-radius:3px;border-left:2px solid var(--accent);display:block;margin:5px 0;}
+  .chart-row{display:grid;gap:16px;margin-bottom:16px;}
+  .chart-row.r2{grid-template-columns:35% 1fr;}
+  .chart-row.r2e{grid-template-columns:1fr 1fr;}
+  .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px 20px;}
+  .chart-title{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-bottom:4px;}
+  .chart-insight{font-size:12px;color:var(--slate);margin-bottom:12px;font-style:italic;line-height:1.4;}
+  .chart-insight em{color:var(--amber);font-style:normal;font-weight:600;}
+  .chart-context{font-size:11.5px;color:var(--muted);margin-top:10px;padding-top:10px;border-top:1px solid var(--border);line-height:1.55;}
+  .chart-context strong{color:var(--slate);}
+  .table-wrap{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  thead th{background:var(--surface2);padding:10px 14px;text-align:left;font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none;}
+  thead th:hover{color:var(--text);}
+  tbody tr{border-bottom:1px solid var(--border);}
+  tbody tr:hover{background:rgba(255,255,255,.03);}
+  tbody tr.row-expired{background:rgba(239,68,68,.07);}
+  tbody tr.row-nodata{background:rgba(245,158,11,.05);}
+  td{padding:9px 14px;color:var(--text);white-space:nowrap;}
+  .tag{display:inline-block;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:600;font-family:'IBM Plex Mono',monospace;}
+  .tag-expired{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3);}
+  .tag-nodata{background:rgba(245,158,11,.12);color:var(--amber);}
+  .pagination{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;font-size:12px;color:var(--muted);border-top:1px solid var(--border);}
+  .pagination button{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:4px 12px;border-radius:4px;cursor:pointer;font-size:12px;}
+  .pagination button:hover{background:var(--accent);color:#000;}
+  .pagination button:disabled{opacity:.3;cursor:default;}
+  .filter-bar{display:flex;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap;}
+  .filter-bar label{font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.08em;}
+  .filter-bar select,.filter-bar input{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:5px 10px;border-radius:5px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none;}
+  .filter-bar select:focus,.filter-bar input:focus{border-color:var(--accent);}
+  .heatmap-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  .heatmap-table th{padding:8px 12px;font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);text-align:right;border-bottom:1px solid var(--border);}
+  .heatmap-table th:first-child{text-align:left;}
+  .heatmap-table td{padding:9px 12px;text-align:right;border-bottom:1px solid rgba(255,255,255,.04);font-family:'IBM Plex Mono',monospace;font-size:12px;}
+  .heatmap-table td:first-child{text-align:left;font-family:'DM Sans',sans-serif;font-weight:500;color:var(--text);}
+  .hcell{display:inline-block;padding:3px 8px;border-radius:4px;min-width:58px;text-align:right;}
+  .legend-row{display:flex;flex-wrap:wrap;gap:14px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+  .legend-item{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);}
+  .ldot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
+  @media(max-width:900px){
+    .kpi-ribbon{grid-template-columns:repeat(2,1fr);}
+    .chart-row.r2,.chart-row.r2e{grid-template-columns:1fr;}
+    header{flex-wrap:wrap;gap:8px;}
+    .page{padding:16px 16px 32px;}
+    .tabs{padding:0 16px;overflow-x:auto;}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">Terra<span>smart</span> <span style="color:var(--muted);font-family:'DM Sans';font-weight:300;font-size:16px;">/ Warranty Intelligence</span></div>
+  <div></div>
+  <div class="as-of">As of Apr 16, 2026</div>
+</header>
+<div class="tabs">
+  <div class="tab active" onclick="showPage('exec',this)">Executive Summary</div>
+  <div class="tab" onclick="showPage('risk',this)">Risk Deep-Dive</div>
+</div>
+
+<!-- PAGE 1 -->
+<div id="page-exec" class="page active">
+  <div class="narrative">
+    As of <strong>April 16, 2026</strong>, <strong>87.1%</strong> of the warranty portfolio (263 of 302 projects) carries active coverage.
+    <strong>38 projects</strong> — representing <strong>$33.7M</strong> in sold material value — have no warranty documentation on file.
+    <strong>1 project</strong> has a confirmed expired warranty with <strong>$0</strong> material value on record.
+    The portfolio is split <strong>209 self-performed</strong> vs. <strong>93 material-only</strong> contracts — self-performed projects carry the higher warranty obligation.
+    <span style="display:block;margin-top:6px;font-size:11.5px;color:var(--muted);">Click <span style="color:var(--accent)">ⓘ</span> on any metric card to see exactly how it was calculated. Expand the methodology panel below for full definitions.</span>
+  </div>
+
+  <div class="method-panel">
+    <div class="method-header" onclick="toggleMethod(this)">
+      <div style="display:flex;align-items:center;">
+        <div class="method-icon">ⓘ</div>
+        <div class="method-title">How these numbers are calculated — click to expand</div>
+      </div>
+      <div class="method-toggle">▼</div>
+    </div>
+    <div class="method-body">
+      
+      <p><strong>Warranty status:</strong> A project's effective end date = the <em>latest</em> end date across all three warranty types, giving each project the benefit of its longest-running coverage. Status rules:
+        <ul>
+          <li><strong>Active</strong> — latest end date is &gt;90 days from today</li>
+          <li><strong>Expiring Soon</strong> — latest end date is within 90 days</li>
+          <li><strong>Expired</strong> — latest end date has passed</li>
+          <li><strong>No Warranty Data</strong> — all date fields are blank, "NONE", or "Not on File"</li>
+        </ul>
+      </p>
+      <p><strong>Coverage Gap — shown as two separate KPI cards:</strong><br><br>
+        <strong>Docs Not on File (38 projects, $33.7M):</strong> Projects where no warranty dates were ever entered. Coverage almost certainly exists in underlying POs or sales agreements — this is a documentation gap, not a confirmed absence of coverage.
+        <span class="calc">$33.7M = Σ POS Material Price where status = No Warranty Data</span>
+        <strong>Confirmed Expired (1 project, $0):</strong> One project — Grasshopper Solar, Job #194585 — has a recorded warranty end date of July 29, 2022, now 1,357 days lapsed. The POS Material value on record is $0, so no financial exposure can be quantified from the data. Review independently.
+        <span class="calc">Expired if: latest warranty_end_date &lt; today</span>
+        <strong>Note:</strong> "POS Material Price" is a field name in the dataset — it represents the sold material value, not a cost or liability estimate.
+      </p>
+      <p><strong>Contract type classification:</strong> Determined directly from the dataset. Projects where <em>POS Price – Labor = $0 or blank</em> are classified as <strong>Material Only</strong>. All others are <strong>Self Performed</strong>. This distinction matters for warranty liability: material-only projects carry equipment failure risk only, while self-performed projects carry equipment + workmanship + installation liability.
+        <span class="calc">Material Only: POS_Labor = 0 → lower warranty obligation</span>
+        <span class="calc">Self Performed: POS_Labor &gt; 0 → broader warranty obligation</span>
+      </p>
+      <p><strong>Days Remaining:</strong> Calculated as <em>Latest Warranty End Date − April 16, 2026</em> in calendar days. Large values (e.g. 5,000–7,000 days) reflect long-term racking or component warranties that run 15–20 years — standard for commercial solar installations. Negative values = coverage has lapsed. "—" = no date on record.</p>
+    </div>
+  </div>
+
+
+  <!-- KPI RIBBON -->
+  <div class="kpi-ribbon" style="grid-template-columns:repeat(5,1fr)">
+    <div class="kpi-card green" style="position:relative">
+      <div class="kpi-label">Active Warranties <span class="kpi-info" onclick="toggleTip(event,'t1')">ⓘ</span></div>
+      <div class="kpi-value">263</div>
+      <div class="kpi-sub">87.1% of portfolio <span class="kpi-badge badge-green">✓ HEALTHY</span></div>
+      <div class="kpi-popup" id="t1">
+        <strong>Count of projects where the latest warranty end date is &gt;90 days from today.</strong><br>
+        Uses the most favorable (latest) end date across Racking, Foundation, and Workmanship warranties.
+        <span class="calc">Active if: max(warranty_end_dates) − today &gt; 90 days</span>
+        Target threshold: green if &gt;80% of portfolio. At 87.1%, this portfolio is within the healthy range.
+      </div>
+    </div>
+
+    <div class="kpi-card amber" style="position:relative">
+      <div class="kpi-label">Docs Not on File <span class="kpi-info" onclick="toggleTip(event,'t2')">ⓘ</span></div>
+      <div class="kpi-value">38</div>
+      <div class="kpi-sub">$33.7M sold material value <span class="kpi-badge badge-amber">VERIFY</span></div>
+      <div class="kpi-popup" id="t2">
+        <strong>38 projects where no warranty dates were ever entered in the system.</strong><br><br>
+        These fields are recorded as blank, "NONE", or "Not on File." Coverage almost certainly exists in underlying POs or sales agreements — it simply has never been entered here. This is the primary documentation gap in the portfolio.
+        <span class="calc">$33.7M = Σ POS Material Price for No Warranty Data projects</span>
+        <strong>Recommended action:</strong> Locate the original PO or sales agreement for each project, confirm warranty language, and enter effective dates.
+      </div>
+    </div>
+
+    <div class="kpi-card red" style="position:relative">
+      <div class="kpi-label">Confirmed Expired <span class="kpi-info" onclick="toggleTip(event,'t3')">ⓘ</span></div>
+      <div class="kpi-value">1</div>
+      <div class="kpi-sub">$0 recorded material value <span class="kpi-badge badge-red">LAPSED</span></div>
+      <div class="kpi-popup" id="t3">
+        <strong>1 project with a recorded warranty end date that has passed.</strong><br><br>
+        Grasshopper Solar — 17 Wilson St (Job #194585). Warranty ended July 29, 2022 — 1,357 days ago. POS Material value on record is $0, meaning no material cost was captured in the dataset for this project. The expired status is confirmed but the financial exposure is negligible based on available data.
+        <span class="calc">Expired if: latest warranty_end_date &lt; today</span>
+        This project should be reviewed to confirm whether any ongoing obligation exists.
+      </div>
+    </div>
+
+    <div class="kpi-card amber" style="position:relative">
+      <div class="kpi-label">Self Performed Projects <span class="kpi-info" onclick="toggleTip(event,'t4')">ⓘ</span></div>
+      <div class="kpi-value">209</div>
+      <div class="kpi-sub">vs. 93 material-only <span class="kpi-badge badge-amber">HIGHER LIABILITY</span></div>
+      <div class="kpi-popup" id="t4">
+        <strong>209 self-performed projects (labor + material) vs. 93 material-only.</strong><br>
+        <strong>Self-performed</strong> contracts carry both equipment failure liability <em>and</em> workmanship/installation liability — the broader warranty obligation.<br><br>
+        <strong>Material-only</strong> contracts carry equipment failure liability only — no workmanship risk, no installation rework exposure. From a warranty obligation standpoint, these are lower risk regardless of contract size.<br><br>
+        Determined from the dataset: projects where <em>POS Price – Labor = $0</em> are classified material-only; all others are self-performed.
+      </div>
+    </div>
+
+    <div class="kpi-card slate" style="position:relative">
+      <div class="kpi-label">Total Projects <span class="kpi-info" onclick="toggleTip(event,'t5')">ⓘ</span></div>
+      <div class="kpi-value">302</div>
+      <div class="kpi-sub">263 active · 38 unverified · 1 expired</div>
+      <div class="kpi-popup" id="t5">
+        <strong>Full portfolio breakdown as of April 16, 2026:</strong><br>
+        <strong>263 Active</strong> — warranty dates on file and current (87.1%)<br>
+        <strong>38 No Warranty Data</strong> — no dates ever recorded; coverage unverified (12.6%)<br>
+        <strong>1 Expired</strong> — warranty end date confirmed lapsed, $0 material value recorded (0.3%)<br><br>
+        The portfolio is in strong shape from a coverage standpoint. The primary action item is the 38 undocumented projects — a documentation problem, not a coverage problem.
+      </div>
+    </div>
+  </div>
+
+
+  <div class="chart-row r2">
+    <div class="chart-card">
+      <div class="chart-title">Warranty Status Distribution</div>
+      <div class="chart-insight">Portfolio is <em>86% active</em>. The amber segment (38 projects) reflects missing documentation — not necessarily lapsed coverage.</div>
+      <div style="position:relative;height:210px"><canvas id="donutChart"></canvas></div>
+      <div class="chart-context"><strong>How to read this:</strong> Green = confirmed active coverage. Amber ("No Warranty Data") = dates were never entered — requires verification. Red = dates were filed and have expired. The count in the center is total projects in the portfolio.</div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Expiration Timeline — Next 24 Months</div>
+      <div class="chart-insight">No warranties expire within the next 90 days. The first cluster of <em>9 expirations</em> arrives Oct–Nov 2027.</div>
+      <div style="position:relative;height:210px"><canvas id="timelineChart"></canvas></div>
+      <div class="chart-context"><strong>How to read this:</strong> Each bar shows how many project warranties reach their latest end date in that month. The shaded red band marks the critical 90-day renewal window from today. Bars outside the red band provide adequate runway for proactive action. Each bar represents the <em>longest</em> warranty type for that project (e.g. a 20-year racking warranty, not the shorter workmanship term).</div>
+    </div>
+  </div>
+
+  <div class="chart-row r2e">
+    <div class="chart-card">
+      <div class="chart-title">Coverage Gap by Product Line</div>
+      <div class="chart-insight"><em>TerraTrak</em> accounts for $29.3M of the $33.7M documentation gap — 28 projects with no warranty dates on file. Fuse follows with $2.6M across all 8 of its projects.</div>
+      <div style="position:relative;height:240px"><canvas id="exposureChart"></canvas></div>
+      <div class="chart-context"><strong>How to read this:</strong> Blue = confirmed active coverage (warranty dates on file and current). Red = coverage gap (dates missing or lapsed). Bar length = total sold material value per product line. A long red segment means a large share of that line's material value cannot be verified from existing records. This does not mean coverage doesn't exist — it means it hasn't been documented here.</div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Contract Type &amp; Warranty Risk by Product Line</div>
+      <div class="chart-insight"><em>Self-performed</em> projects carry higher warranty obligation (equipment + workmanship liability). <em>Material-only</em> projects carry equipment failure liability only — lower ongoing exposure. TerraTrak's undocumented risk spans both types.</div>
+      <div style="position:relative;height:240px"><canvas id="contractChart"></canvas></div>
+      <div class="chart-context"><strong>How to read this:</strong> Each bar is split into four segments: Self-Performed covered (blue), Self-Performed undocumented/at-risk (red), Material-Only covered (teal), Material-Only undocumented/at-risk (amber). <strong>Material-only projects carry lower warranty liability</strong> — exposure is limited to equipment failure only, with no workmanship or installation risk. Self-performed projects carry the broader obligation. "At risk" in both cases means no warranty documentation is on file, not that a claim has occurred.</div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 2 -->
+<div id="page-risk" class="page">
+  <div class="narrative">
+    The following <strong>39 projects</strong> represent the highest combined financial and warranty risk in the portfolio.
+    <strong>38 have no warranty data on file</strong> — this is primarily a <em>documentation gap</em>, not a confirmed coverage lapse.
+    <strong>1 is confirmed expired</strong> — with $0 material value recorded in the dataset.
+    <span style="display:block;margin-top:6px;font-size:11.5px;color:var(--muted);">Negative days remaining = coverage already lapsed. "—" = no warranty date was ever recorded in the system.</span>
+  </div>
+
+  <!-- Why No Warranty Data = Risk Flag -->
+  <div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-left:3px solid var(--amber);border-radius:0 6px 6px 0;padding:14px 18px;margin-bottom:20px;font-size:13px;line-height:1.65;color:var(--text);">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--amber);margin-bottom:8px;">⚠ Why "No Warranty Data" Is Flagged as Risk</div>
+    <p style="margin-bottom:8px;">These 38 projects are flagged not because their warranties are definitively expired, but because <strong>no documentation exists in the system to confirm active coverage</strong>. In the absence of a recorded warranty end date, there is no way to verify whether a claim would be honored if a failure occurred today.</p>
+    <p style="margin-bottom:8px;">In practice, <strong>some form of warranty language almost certainly exists</strong> — whether in a purchase order, sales agreement, or manufacturer terms — even if it was never formally entered here. However, without that documentation on file, Terrasmart cannot readily defend its coverage position in a dispute, audit, or insurance review.</p>
+    <p style="color:var(--muted);font-size:12px;"><strong style="color:var(--slate);">Recommended action:</strong> For each of the 38 projects, locate the original PO or sales agreement, confirm what warranty language was included, and enter the effective dates. This converts an unverifiable risk into a documented, auditable position — without necessarily changing the underlying coverage.</p>
+  </div>
+
+  <div class="method-panel">
+    <div class="method-header" onclick="toggleMethod(this)">
+      <div style="display:flex;align-items:center;">
+        <div class="method-icon">ⓘ</div>
+        <div class="method-title">Understanding "Days Remaining" and the three warranty coverage types — click to expand</div>
+      </div>
+      <div class="method-toggle">▼</div>
+    </div>
+    <div class="method-body">
+      <p><strong>Each project tracks up to three separate warranty types</strong>, each with its own start and end date:</p>
+      <ul>
+        <li><strong>Racking Warranty</strong> — covers the structural mounting/racking system. These are typically the longest-running, often 10–25 years from installation.</li>
+        <li><strong>Foundation/Component Warranty</strong> — covers structural foundations and major mechanical components.</li>
+        <li><strong>Workmanship Warranty</strong> — covers the quality of installation labor. These are typically the shortest, often 1–5 years.</li>
+      </ul>
+      <p>Because these three clocks run independently, a project may have an <em>expired</em> Workmanship warranty but an <em>active</em> 20-year Racking warranty. The "Days Remaining" column reflects the <em>latest</em> end date across all three types — the longest remaining coverage the project holds.</p>
+      <p><strong>Large days remaining values are expected:</strong> A value of 5,647 days (≈15.5 years) means that project's racking or component warranty runs until approximately 2041 — entirely normal for commercial solar. These are not errors.</p>
+      <p><strong>Negative days remaining</strong> (shown in red) means the coverage window has already closed. −396 days means that project's warranty lapsed approximately 13 months ago.</p>
+      <p><strong>"—" (No Warranty Data):</strong> No end dates were ever entered for these projects. The underlying warranty paperwork may exist with the manufacturer or in project files — it simply was never recorded here. These require verification before confirming exposure.</p>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <label>Status</label>
+    <select id="filterStatus" onchange="renderTable()"><option value="">All</option><option value="Expired">Expired</option><option value="No Warranty Data">No Warranty Data</option></select>
+    <label>Product</label>
+    <select id="filterProduct" onchange="renderTable()"><option value="">All</option><option>TerraTrak</option><option>SunFlower</option><option>Wave</option><option>Agile</option><option>Fuse</option></select>
+    <label>Search</label>
+    <input type="text" id="filterSearch" placeholder="Customer or project…" oninput="renderTable()" style="width:180px">
+  </div>
+
+  <div class="chart-card" style="margin-bottom:16px;padding:0;overflow:hidden;">
+    <div style="padding:16px 20px 0">
+      <div class="chart-title">At-Risk Projects — Ranked by Material Exposure</div>
+      <div class="chart-insight" style="margin-bottom:8px">Red rows = confirmed expired coverage. Amber rows = no warranty records filed (coverage unverified). Click column headers to sort. Hover over "Days Remaining" header for definition.</div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th onclick="sortTable('job')">Job #</th>
+          <th onclick="sortTable('customer')">Customer</th>
+          <th onclick="sortTable('project')">Project</th>
+          <th onclick="sortTable('pl')">Product Line</th>
+          <th onclick="sortTable('mat')">POS Material ↕</th>
+          <th onclick="sortTable('days')" title="Calendar days until the latest warranty end date (across Racking, Foundation, Workmanship). Negative = lapsed. — = no date recorded.">Days Remaining ⓘ</th>
+          <th onclick="sortTable('status')">Status</th>
+        </tr></thead>
+        <tbody id="riskTableBody"></tbody>
+      </table>
+      <div class="pagination">
+        <span id="pageInfo">—</span>
+        <div style="display:flex;gap:8px">
+          <button onclick="prevPg()" id="btnPrev">← Prev</button>
+          <button onclick="nextPg()" id="btnNext">Next →</button>
+        </div>
+      </div>
+    </div>
+    <div style="padding:10px 20px 14px;border-top:1px solid var(--border);">
+      <div class="legend-row">
+        <div class="legend-item"><div class="ldot" style="background:rgba(239,68,68,.35)"></div>Expired — warranty end date confirmed lapsed</div>
+        <div class="legend-item"><div class="ldot" style="background:rgba(245,158,11,.3)"></div>No Warranty Data — no dates on file; coverage status unverified</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-row r2e">
+    <div class="chart-card">
+      <div class="chart-title">Warranty Age Distribution (6-month bins)</div>
+      <div class="chart-insight">Portfolio peaks at <em>72–84 months</em> (6–7 year-old installs). Expired cases cluster in the 54–72 month range.</div>
+      <div style="position:relative;height:230px"><canvas id="ageChart"></canvas></div>
+      <div class="chart-context"><strong>How to read this:</strong> Each bar = number of projects in that age bracket, measured from the Racking Warranty Start Date to today. Age is broken into 6-month bins. Older projects appear further right and are more likely to have expiring or lapsed coverage. Stack colors show status composition within each age cohort.</div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Product Line Performance Matrix</div>
+      <div class="chart-insight"><em>Fuse</em> has a 50% documentation gap. TerraTrak's 26% undocumented rate represents $29.3M in unverified exposure.</div>
+      <div style="overflow-x:auto;margin-top:8px"><table class="heatmap-table" id="heatmapTable"></table></div>
+      <div class="chart-context" style="margin-top:10px"><strong>How to read this:</strong> Each cell is independently color-coded. "% Undocumented" shows what share of that product line's projects have no warranty dates on file — green &lt;10%, amber 10–30%, red &gt;30%. "Exposure" = total POS material value for undocumented projects in that line: green = $0, red = dollar value at risk. Project count is shown for portfolio sizing context.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const DATA={
+  timeline:[{ym:"2027-10",count:3},{ym:"2027-11",count:6},{ym:"2028-03",count:2}],
+  exposure:[
+    {pl:"TerraTrak",active:152779499,risk:29321958},{pl:"SunFlower",active:132846021,risk:882105},
+    {pl:"Wave",active:13853124,risk:928802},{pl:"Agile",active:7369203,risk:0},
+    {pl:"Fuse",active:0,risk:2559649},{pl:"Glide",active:1215125,risk:0},{pl:"Canopy",active:208600,risk:0}
+  ],
+  contractChart:[
+    {pl:"TerraTrak",fs_active:129805482,fs_risk:22790190,mo_active:22974017,mo_risk:6531768,fs_count:90,mo_count:17,fs_risk_count:19,mo_risk_count:9},
+    {pl:"SunFlower", fs_active:68101241, fs_risk:591877,  mo_active:64744780,mo_risk:290228, fs_count:97,mo_count:52,fs_risk_count:1, mo_risk_count:1},
+    {pl:"Wave",      fs_active:7012491,  fs_risk:119238,  mo_active:6840633, mo_risk:809564, fs_count:10,mo_count:15,fs_risk_count:1, mo_risk_count:2},
+    {pl:"Agile",     fs_active:7369203,  fs_risk:0,       mo_active:0,       mo_risk:0,      fs_count:8, mo_count:2, fs_risk_count:0, mo_risk_count:1},
+    {pl:"Fuse",      fs_active:0,        fs_risk:1674649, mo_active:0,       mo_risk:885000, fs_count:2, mo_count:6, fs_risk_count:2, mo_risk_count:2},
+    {pl:"Glide",     fs_active:1215125,  fs_risk:0,       mo_active:0,       mo_risk:0,      fs_count:1, mo_count:0, fs_risk_count:0, mo_risk_count:0},
+    {pl:"Canopy",    fs_active:208600,   fs_risk:0,       mo_active:0,       mo_risk:0,      fs_count:1, mo_count:0, fs_risk_count:0, mo_risk_count:0}
+  ],
+  age:[
+    {b:0,s:"Active",c:1},{b:6,s:"Active",c:5},{b:6,s:"No Warranty Data",c:1},{b:12,s:"Active",c:13},
+    {b:18,s:"Active",c:19},{b:24,s:"Active",c:8},{b:30,s:"Active",c:16},{b:36,s:"Active",c:8},
+    {b:42,s:"Active",c:12},{b:48,s:"Active",c:16},{b:54,s:"Active",c:16},{b:54,s:"Expired",c:1},
+    {b:60,s:"Active",c:20},{b:60,s:"Expired",c:1},{b:66,s:"Active",c:28},{b:72,s:"Active",c:38},
+    {b:72,s:"Expired",c:1},{b:72,s:"No Warranty Data",c:1},{b:78,s:"Active",c:13},
+    {b:84,s:"Active",c:22},{b:90,s:"Active",c:13},{b:96,s:"Active",c:2},{b:102,s:"Active",c:10},{b:162,s:"Active",c:1}
+  ],
+  atRisk:[
+    {job:217422,customer:"Nexamp",project:"Bangor 12296 Solar",pl:"TerraTrak",mat:3003040,sales:3673716,margin:18.3,days:null,status:"No Warranty Data"},
+    {job:194697,customer:"NextEra",project:"Sorrell Hill II",pl:"TerraTrak",mat:2182883,sales:2182883,margin:0,days:null,status:"No Warranty Data"},
+    {job:2225393,customer:"ReVision Energy",project:"Kingston Solar",pl:"TerraTrak",mat:1858598,sales:2324412,margin:20.0,days:null,status:"No Warranty Data"},
+    {job:194676,customer:"NextEra",project:"Avon Solar",pl:"TerraTrak",mat:1791635,sales:1860372,margin:3.7,days:null,status:"No Warranty Data"},
+    {job:2326463,customer:"Navisun",project:"Southwick",pl:"TerraTrak",mat:1776538,sales:2164950,margin:17.9,days:null,status:"No Warranty Data"},
+    {job:2431259,customer:"Pure Power",project:"South Boston",pl:"TerraTrak",mat:1741471,sales:2706099,margin:35.6,days:null,status:"No Warranty Data"},
+    {job:2430504,customer:"Davis Hill Dev",project:"St Croix Farm",pl:"TerraTrak",mat:1671341,sales:3218516,margin:48.1,days:null,status:"No Warranty Data"},
+    {job:207242,customer:"Nexamp",project:"Waddingham Rd",pl:"TerraTrak",mat:1612961,sales:2177198,margin:25.9,days:null,status:"No Warranty Data"},
+    {job:1990051,customer:"Narenco",project:"Tamworth",pl:"SunFlower",mat:1589473,sales:1600858,margin:0.7,days:-396,status:"Expired"},
+    {job:2329158,customer:"ACE Solar",project:"Afton Solar",pl:"TerraTrak",mat:1532232,sales:1532232,margin:0,days:null,status:"No Warranty Data"},
+    {job:2432752,customer:"Pfister Energy",project:"GSPP West",pl:"TerraTrak",mat:1479657,sales:2733368,margin:45.9,days:null,status:"No Warranty Data"},
+    {job:2328581,customer:"Empire Valorize",project:"Ransom Farm",pl:"TerraTrak",mat:1478961,sales:2517892,margin:41.3,days:null,status:"No Warranty Data"},
+    {job:207320,customer:"Nexamp",project:"Palatine Caswell",pl:"TerraTrak",mat:1346759,sales:1949075,margin:30.9,days:null,status:"No Warranty Data"},
+    {job:2130104,customer:"Greenspark",project:"Green Lakes",pl:"Wave",mat:1154725,sales:1676443,margin:31.1,days:-1451,status:"Expired"},
+    {job:194315,customer:"EcoPower Finance",project:"Rio Arriba",pl:"TerraTrak",mat:999892,sales:999892,margin:0,days:null,status:"No Warranty Data"},
+    {job:194428,customer:"Hep Petra",project:"Limelight",pl:"TerraTrak",mat:979781,sales:979781,margin:0,days:null,status:"No Warranty Data"},
+    {job:194386,customer:"NextEra",project:"Mt. Morris",pl:"TerraTrak",mat:833450,sales:833450,margin:0,days:null,status:"No Warranty Data"},
+    {job:194279,customer:"Hep Petra",project:"White Street Greensboro",pl:"TerraTrak",mat:480556,sales:480556,margin:0,days:null,status:"No Warranty Data"},
+    {job:205940,customer:"Cenergy",project:"Rockford CS1",pl:"TerraTrak",mat:0,sales:0,margin:null,days:null,status:"No Warranty Data"},
+    {job:205974,customer:"Cenergy",project:"Rockford CS2",pl:"TerraTrak",mat:0,sales:0,margin:null,days:null,status:"No Warranty Data"}
+  ],
+  matrix:[
+    {pl:"TerraTrak",count:107,pct:26.2,exposure:29321958,pos:182101457},
+    {pl:"SunFlower",count:149,pct:1.3,exposure:882105,pos:133728126},
+    {pl:"Wave",count:25,pct:12.0,exposure:928802,pos:14781926},
+    {pl:"Agile",count:10,pct:10.0,exposure:0,pos:7369203},
+    {pl:"Fuse",count:8,margin:22.3,pct:50.0,exposure:0,pos:2559649},
+    {pl:"Glide",count:1,pct:0,exposure:0,pos:1215125},
+    {pl:"Canopy",count:1,pct:0,exposure:0,pos:208600}
+  ]
+};
+
+function fmt$(v){if(v>=1e6)return'$'+(v/1e6).toFixed(1)+'M';if(v>=1e3)return'$'+(v/1e3).toFixed(0)+'K';return'$'+v.toFixed(0);}
+Chart.defaults.color='#64748b';Chart.defaults.font.family="'IBM Plex Mono',monospace";Chart.defaults.font.size=11;
+
+function showPage(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');el.classList.add('active');
+}
+function toggleMethod(hdr){
+  const b=hdr.nextElementSibling,t=hdr.querySelector('.method-toggle');
+  b.classList.toggle('open');t.style.transform=b.classList.contains('open')?'rotate(180deg)':'';
+}
+let openTip=null;
+function toggleTip(e,id){
+  e.stopPropagation();
+  const el=document.getElementById(id);
+  if(openTip&&openTip!==el)openTip.classList.remove('visible');
+  el.classList.toggle('visible');openTip=el.classList.contains('visible')?el:null;
+}
+document.addEventListener('click',()=>{if(openTip){openTip.classList.remove('visible');openTip=null;}});
+
+// DONUT
+new Chart(document.getElementById('donutChart'),{
+  type:'doughnut',
+  data:{labels:['Active','No Warranty Data','Expired'],datasets:[{
+    data:[263,38,1],backgroundColor:['rgba(34,197,94,.8)','rgba(245,158,11,.75)','rgba(239,68,68,.8)'],
+    borderColor:'#0c0f14',borderWidth:3,hoverOffset:6
+  }]},
+  options:{responsive:true,maintainAspectRatio:false,cutout:'68%',
+    plugins:{legend:{position:'bottom',labels:{padding:14,boxWidth:10,color:'#94a3b8'}},
+      tooltip:{callbacks:{label:c=>` ${c.label}: ${c.raw} (${(c.raw/302*100).toFixed(1)}%)`}}}},
+  plugins:[{id:'center',afterDraw(ch){
+    const{ctx,chartArea:{width,height,left,top}}=ch;ctx.save();
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    const cx=left+width/2,cy=top+height/2;
+    ctx.font="bold 26px 'DM Serif Display',serif";ctx.fillStyle='#e2e8f0';ctx.fillText('302',cx,cy-10);
+    ctx.font="10px 'IBM Plex Mono',monospace";ctx.fillStyle='#64748b';ctx.fillText('PROJECTS',cx,cy+13);ctx.restore();
+  }}]
+});
+
+// TIMELINE
+(()=>{
+  const start=new Date('2026-04-01'),labels=[],vals=[];
+  for(let i=0;i<24;i++){const d=new Date(start);d.setMonth(d.getMonth()+i);const ym=d.toISOString().slice(0,7);labels.push(ym.replace('-','/'));const f=DATA.timeline.find(t=>t.ym===ym);vals.push(f?f.count:0);}
+  new Chart(document.getElementById('timelineChart'),{type:'bar',
+    data:{labels,datasets:[{label:'Expiring',data:vals,backgroundColor:vals.map((_,i)=>i<6?'rgba(239,68,68,.6)':'rgba(56,189,248,.55)'),borderRadius:3,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,scales:{
+      x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{maxRotation:45,font:{size:9}}},
+      y:{grid:{color:'rgba(255,255,255,.04)'},beginAtZero:true,ticks:{stepSize:1,precision:0}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{title:t=>t[0].label,label:t=>` ${t.raw} expiration${t.raw!==1?'s':''}`}}}},
+    plugins:[{id:'sh',beforeDraw(ch){const{ctx,chartArea}=ch;if(!chartArea)return;ctx.save();ctx.fillStyle='rgba(239,68,68,.06)';const x=Math.min(chartArea.right,chartArea.left+(6/24)*chartArea.width);ctx.fillRect(chartArea.left,chartArea.top,x-chartArea.left,chartArea.height);ctx.restore();}}]
+  });
+})();
+
+// EXPOSURE
+new Chart(document.getElementById('exposureChart'),{type:'bar',
+  data:{labels:DATA.exposure.filter(d=>d.active+d.risk>0).map(d=>d.pl),
+    datasets:[{label:'Active — Docs on File',data:DATA.exposure.filter(d=>d.active+d.risk>0).map(d=>d.active),backgroundColor:'rgba(56,189,248,.45)',borderRadius:3},
+      {label:'Coverage Gap — Docs Missing/Lapsed',data:DATA.exposure.filter(d=>d.active+d.risk>0).map(d=>d.risk),backgroundColor:'rgba(239,68,68,.7)',borderRadius:3}]},
+  options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
+    scales:{x:{stacked:true,grid:{color:'rgba(255,255,255,.04)'},ticks:{callback:v=>fmt$(v)}},y:{stacked:true,grid:{display:false}}},
+    plugins:{legend:{position:'bottom',labels:{padding:12,boxWidth:10,color:'#94a3b8'}},tooltip:{callbacks:{label:t=>` ${t.dataset.label}: ${fmt$(t.raw)}`}}}}
+});
+
+// CONTRACT TYPE CHART
+(()=>{
+  const d=DATA.contractChart;
+  const labels=d.map(r=>r.pl);
+  new Chart(document.getElementById('contractChart'),{type:'bar',
+    data:{labels,datasets:[
+      {label:'Self Performed — Covered',    data:d.map(r=>r.fs_active), backgroundColor:'rgba(56,189,248,.55)', borderRadius:2, stack:'fs'},
+      {label:'Self Performed — Undocumented',data:d.map(r=>r.fs_risk),  backgroundColor:'rgba(239,68,68,.75)',  borderRadius:2, stack:'fs'},
+      {label:'Material Only — Covered',      data:d.map(r=>r.mo_active), backgroundColor:'rgba(52,211,153,.5)',  borderRadius:2, stack:'mo'},
+      {label:'Material Only — Undocumented', data:d.map(r=>r.mo_risk),  backgroundColor:'rgba(245,158,11,.7)', borderRadius:2, stack:'mo'}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{
+        x:{grid:{display:false},ticks:{font:{size:11}}},
+        y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{callback:v=>fmt$(v)},
+           title:{display:true,text:'POS Material Value',color:'#64748b',font:{size:10}}}
+      },
+      plugins:{
+        legend:{position:'bottom',labels:{padding:10,boxWidth:10,color:'#94a3b8',font:{size:10}}},
+        tooltip:{callbacks:{
+          label:t=>{
+            const r=d[t.dataIndex];
+            const isFS=t.datasetIndex<=1,isRisk=t.datasetIndex===1||t.datasetIndex===3;
+            const ct=isFS?'Self Performed':'Material Only';
+            const wstat=isRisk?'Undocumented':'Covered';
+            const cnt=isFS?(isRisk?r.fs_risk_count:r.fs_count-r.fs_risk_count):(isRisk?r.mo_risk_count:r.mo_count-r.mo_risk_count);
+            return[` ${ct} — ${wstat}: ${fmt$(t.raw)}`,` ${cnt} project${cnt!==1?'s':''}`];
+          }
+        }}
+      }
+    }
+  });
+})();
+
+// AGE HISTOGRAM
+(()=>{
+  const bins=[...new Set(DATA.age.map(d=>d.b))].sort((a,b)=>a-b);
+  const g=(b,s)=>{const f=DATA.age.find(d=>d.b===b&&d.s===s);return f?f.c:0;};
+  new Chart(document.getElementById('ageChart'),{type:'bar',
+    data:{labels:bins.map(b=>`${b}–${b+6}mo`),datasets:[
+      {label:'Active',data:bins.map(b=>g(b,'Active')),backgroundColor:'rgba(34,197,94,.6)',borderRadius:2},
+      {label:'Expired',data:bins.map(b=>g(b,'Expired')),backgroundColor:'rgba(239,68,68,.75)',borderRadius:2},
+      {label:'No Data',data:bins.map(b=>g(b,'No Warranty Data')),backgroundColor:'rgba(245,158,11,.65)',borderRadius:2}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{stacked:true,grid:{display:false},ticks:{maxRotation:45,font:{size:9}}},y:{stacked:true,grid:{color:'rgba(255,255,255,.04)'},ticks:{precision:0}}},
+      plugins:{legend:{position:'bottom',labels:{padding:12,boxWidth:10,color:'#94a3b8'}}}}
+  });
+})();
+
+// HEATMAP TABLE
+(()=>{
+  const tbl=document.getElementById('heatmapTable');
+  tbl.innerHTML='<tr><th>Product Line</th><th>Projects</th><th>Self Performed</th><th>Material Only</th><th>% Undocumented</th><th>Exposure</th></tr>';
+  // contract counts per pl
+  const cc={};DATA.contractChart.forEach(r=>{cc[r.pl]={sp:r.fs_count,mo:r.mo_count};});
+  DATA.matrix.forEach(d=>{
+    const pc=d.pct>=30?'rgba(239,68,68,.25)':d.pct>=10?'rgba(245,158,11,.2)':'rgba(34,197,94,.12)';
+    const pt=d.pct>=30?'#ef4444':d.pct>=10?'#f59e0b':'#22c55e';
+    const ec=d.exposure>0?'rgba(239,68,68,.18)':'rgba(34,197,94,.1)';
+    const et=d.exposure>0?'#ef4444':'#22c55e';
+    const sp=(cc[d.pl]&&cc[d.pl].sp)||0;
+    const mo=(cc[d.pl]&&cc[d.pl].mo)||0;
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${d.pl}</td><td><span class="hcell" style="background:rgba(56,189,248,.12);color:#38bdf8">${d.count}</span></td><td><span class="hcell" style="background:rgba(56,189,248,.08);color:#7dd3fc">${sp}</span></td><td><span class="hcell" style="background:rgba(52,211,153,.1);color:#34d399">${mo}</span></td><td><span class="hcell" style="background:${pc};color:${pt}">${d.pct.toFixed(0)}%</span></td><td><span class="hcell" style="background:${ec};color:${et}">${d.exposure>0?fmt$(d.exposure):'—'}</span></td>`;
+    tbl.appendChild(tr);
+  });
+})();
+
+// RISK TABLE
+let tData=[...DATA.atRisk],sKey='mat',sDir=-1,pg=0;const PG=10;
+function sortTable(k){if(sKey===k)sDir*=-1;else{sKey=k;sDir=-1;}pg=0;renderTable();}
+function renderTable(){
+  const sf=document.getElementById('filterStatus').value;
+  const pf=document.getElementById('filterProduct').value;
+  const q=(document.getElementById('filterSearch').value||'').toLowerCase();
+  let f=tData.filter(d=>{
+    if(sf&&d.status!==sf)return false;
+    if(pf&&d.pl!==pf)return false;
+    if(q&&!d.customer.toLowerCase().includes(q)&&!d.project.toLowerCase().includes(q))return false;
+    return true;
+  });
+  f.sort((a,b)=>{const av=a[sKey],bv=b[sKey];if(av==null)return 1;if(bv==null)return-1;return(av<bv?-1:av>bv?1:0)*sDir;});
+  const tot=f.length,st=pg*PG,sl=f.slice(st,st+PG);
+  document.getElementById('pageInfo').textContent=`${st+1}–${Math.min(st+PG,tot)} of ${tot} projects`;
+  document.getElementById('btnPrev').disabled=pg===0;
+  document.getElementById('btnNext').disabled=(pg+1)*PG>=tot;
+  const body=document.getElementById('riskTableBody');body.innerHTML='';
+  sl.forEach(d=>{
+    const tr=document.createElement('tr');
+    tr.className=d.status==='Expired'?'row-expired':'row-nodata';
+    const tc=d.status==='Expired'?'tag-expired':'tag-nodata';
+    const tl=d.status==='Expired'?'EXPIRED':'NO DATA';
+    const dh=d.days===null?`<span style="color:var(--muted)" title="No warranty date on file">—</span>`:d.days<0?`<span style="color:var(--red)" title="Lapsed ${Math.abs(d.days)} days ago">${d.days}d</span>`:`${d.days}d`;
+    tr.innerHTML=`<td style="font-family:'IBM Plex Mono',monospace;color:var(--muted);font-size:11px">${d.job}</td><td style="font-weight:500">${d.customer}</td><td style="color:var(--slate)">${d.project}</td><td><span style="font-size:11px;background:rgba(56,189,248,.1);color:var(--accent);padding:2px 7px;border-radius:3px">${d.pl}</span></td><td style="font-family:'IBM Plex Mono',monospace;font-size:12px">${d.mat>0?fmt$(d.mat):'—'}</td><td style="font-family:'IBM Plex Mono',monospace;font-size:12px">${dh}</td><td><span class="tag ${tc}">${tl}</span></td>`;
+    body.appendChild(tr);
+  });
+}
+function prevPg(){if(pg>0){pg--;renderTable();}}
+function nextPg(){pg++;renderTable();}
+renderTable();
+</script>
+</body>
+</html>
