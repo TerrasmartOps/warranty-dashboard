@@ -95,7 +95,7 @@
   .heatmap-table td:first-child{text-align:left;font-family:'DM Sans',sans-serif;font-weight:500;color:var(--text);}
   .hcell{display:inline-block;padding:3px 8px;border-radius:4px;min-width:58px;text-align:right;}
   .legend-row{display:flex;flex-wrap:wrap;gap:14px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
-  .legend-item{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);}
+  .legend-item{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--slate);}
   .ldot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
   @media(max-width:900px){
     .kpi-ribbon{grid-template-columns:repeat(2,1fr);}
@@ -120,10 +120,10 @@
 <!-- PAGE 1 -->
 <div id="page-exec" class="page active">
   <div class="narrative">
-    As of <strong>April 16, 2026</strong>, <strong>87.1%</strong> of the warranty portfolio (263 of 302 projects) carries active coverage.
-    <strong>38 projects</strong> — representing <strong>$33.7M</strong> in sold material value — have no warranty documentation on file.
-    <strong>1 project</strong> has a confirmed expired warranty with <strong>$0</strong> material value on record.
-    The portfolio is split <strong>209 self-performed</strong> vs. <strong>93 material-only</strong> contracts — self-performed projects carry the higher warranty obligation.
+    As of <strong>April 16, 2026</strong>, <strong>87.1%</strong> of the warranty portfolio (263 of 302 projects) carries active racking coverage — the most critical long-duration warranty type.
+    <strong>11 projects</strong> have a warranty type expiring within 90 days. <strong>38 projects</strong> have no warranty documentation on file ($33.7M sold material value).
+    <strong>142 workmanship</strong> and <strong>128 component</strong> warranties have expired — largely expected given portfolio age.
+    The portfolio is split <strong>209 self-performed</strong> vs. <strong>93 material-only</strong> — self-performed projects carry the broader warranty obligation.
     <span style="display:block;margin-top:6px;font-size:11.5px;color:var(--muted);">Click <span style="color:var(--accent)">ⓘ</span> on any metric card to see exactly how it was calculated. Expand the methodology panel below for full definitions.</span>
   </div>
 
@@ -163,81 +163,82 @@
 
   <!-- KPI RIBBON -->
   <div class="kpi-ribbon" style="grid-template-columns:repeat(5,1fr)">
+
     <div class="kpi-card green" style="position:relative">
-      <div class="kpi-label">Active Warranties <span class="kpi-info" onclick="toggleTip(event,'t1')">ⓘ</span></div>
-      <div class="kpi-value">263</div>
-      <div class="kpi-sub">87.1% of portfolio <span class="kpi-badge badge-green">✓ HEALTHY</span></div>
+      <div class="kpi-label">Racking Active <span class="kpi-info" onclick="toggleTip(event,'t1')">ⓘ</span></div>
+      <div class="kpi-value">261</div>
+      <div class="kpi-sub">Most critical type <span class="kpi-badge badge-green">✓ HEALTHY</span></div>
       <div class="kpi-popup" id="t1">
-        <strong>Count of projects where the latest warranty end date is &gt;90 days from today.</strong><br>
-        Uses the most favorable (latest) end date across Racking, Foundation, and Workmanship warranties.
-        <span class="calc">Active if: max(warranty_end_dates) − today &gt; 90 days</span>
-        Target threshold: green if &gt;80% of portfolio. At 87.1%, this portfolio is within the healthy range.
+        <strong>261 projects have an active racking warranty on file.</strong><br><br>
+        Racking covers the structural mounting system for the life of the installation (10–25 years) — the most critical warranty type. 2 projects have expired racking coverage; 39 have no data on file.<br><br>
+        Foundation warranties mirror this: 263 active, 0 expired, 39 no data.
+        <span class="calc">Active if: Racking_end_date − today &gt; 90 days</span>
       </div>
     </div>
 
     <div class="kpi-card amber" style="position:relative">
-      <div class="kpi-label">Docs Not on File <span class="kpi-info" onclick="toggleTip(event,'t2')">ⓘ</span></div>
+      <div class="kpi-label">Expiring ≤ 90 Days <span class="kpi-info" onclick="toggleTip(event,'t2')">ⓘ</span></div>
+      <div class="kpi-value">11</div>
+      <div class="kpi-sub">Across any warranty type — closing soon</div>
+      <div class="kpi-popup" id="t2">
+        <strong>11 projects have at least one warranty type expiring within 90 days.</strong><br><br>
+        All 11 are Component or Workmanship type. As these warranties close out, Terrasmart's obligation window on those coverage types ends — liability shrinks accordingly.<br><br>
+        Largest by material value: Blue Ridge Power / Foxglove (Workmanship, 14 days, $25.8M). NextEra Clay Solar Component expires today.<br><br>
+        Racking and Foundation warranties are not approaching expiry in this window.
+        <span class="calc">Expiring: 0 ≤ (warranty_end − today) ≤ 90 days, any type</span>
+      </div>
+    </div>
+
+    <div class="kpi-card amber" style="position:relative">
+      <div class="kpi-label">Docs Not on File <span class="kpi-info" onclick="toggleTip(event,'t3')">ⓘ</span></div>
       <div class="kpi-value">38</div>
       <div class="kpi-sub">$33.7M sold material value <span class="kpi-badge badge-amber">VERIFY</span></div>
-      <div class="kpi-popup" id="t2">
-        <strong>38 projects where no warranty dates were ever entered in the system.</strong><br><br>
-        These fields are recorded as blank, "NONE", or "Not on File." Coverage almost certainly exists in underlying POs or sales agreements — it simply has never been entered here. This is the primary documentation gap in the portfolio.
-        <span class="calc">$33.7M = Σ POS Material Price for No Warranty Data projects</span>
-        <strong>Recommended action:</strong> Locate the original PO or sales agreement for each project, confirm warranty language, and enter effective dates.
-      </div>
-    </div>
-
-    <div class="kpi-card red" style="position:relative">
-      <div class="kpi-label">Confirmed Expired <span class="kpi-info" onclick="toggleTip(event,'t3')">ⓘ</span></div>
-      <div class="kpi-value">1</div>
-      <div class="kpi-sub">$0 recorded material value <span class="kpi-badge badge-red">LAPSED</span></div>
       <div class="kpi-popup" id="t3">
-        <strong>1 project with a recorded warranty end date that has passed.</strong><br><br>
-        Grasshopper Solar — 17 Wilson St (Job #194585). Warranty ended July 29, 2022 — 1,357 days ago. POS Material value on record is $0, meaning no material cost was captured in the dataset for this project. The expired status is confirmed but the financial exposure is negligible based on available data.
-        <span class="calc">Expired if: latest warranty_end_date &lt; today</span>
-        This project should be reviewed to confirm whether any ongoing obligation exists.
+        <strong>38 projects where all four warranty types have no dates entered.</strong><br><br>
+        Coverage almost certainly exists in underlying POs or sales agreements — it has simply never been entered here.
+        <span class="calc">$33.7M = Σ POS Material Price for all-blank warranty projects</span>
+        <strong>Action:</strong> Locate original PO or sales agreement, confirm warranty language, enter effective dates.
       </div>
     </div>
 
     <div class="kpi-card amber" style="position:relative">
-      <div class="kpi-label">Self Performed Projects <span class="kpi-info" onclick="toggleTip(event,'t4')">ⓘ</span></div>
-      <div class="kpi-value">209</div>
-      <div class="kpi-sub">vs. 93 material-only <span class="kpi-badge badge-amber">HIGHER LIABILITY</span></div>
+      <div class="kpi-label">Component Expired <span class="kpi-info" onclick="toggleTip(event,'t4')">ⓘ</span></div>
+      <div class="kpi-value">128</div>
+      <div class="kpi-sub">5–10 yr coverage terms <span class="kpi-badge badge-amber">REVIEW</span></div>
       <div class="kpi-popup" id="t4">
-        <strong>209 self-performed projects (labor + material) vs. 93 material-only.</strong><br>
-        <strong>Self-performed</strong> contracts carry both equipment failure liability <em>and</em> workmanship/installation liability — the broader warranty obligation.<br><br>
-        <strong>Material-only</strong> contracts carry equipment failure liability only — no workmanship risk, no installation rework exposure. From a warranty obligation standpoint, these are lower risk regardless of contract size.<br><br>
-        Determined from the dataset: projects where <em>POS Price – Labor = $0</em> are classified material-only; all others are self-performed.
+        <strong>128 projects have expired component warranties (5–10 yr terms).</strong><br><br>
+        Component warranties cover major equipment — tracker motors, drives, structural hardware. Expiry means the manufacturer's equipment coverage window has closed. Any failure now requires direct repair/replace cost with no warranty backstop.<br><br>
+        6 more projects have component warranties expiring within 90 days.
       </div>
     </div>
 
     <div class="kpi-card slate" style="position:relative">
-      <div class="kpi-label">Total Projects <span class="kpi-info" onclick="toggleTip(event,'t5')">ⓘ</span></div>
-      <div class="kpi-value">302</div>
-      <div class="kpi-sub">263 active · 38 unverified · 1 expired</div>
+      <div class="kpi-label">Workmanship Expired <span class="kpi-info" onclick="toggleTip(event,'t5')">ⓘ</span></div>
+      <div class="kpi-value">142</div>
+      <div class="kpi-sub">1–5 yr terms <span class="kpi-badge badge-green">EXPECTED</span></div>
       <div class="kpi-popup" id="t5">
-        <strong>Full portfolio breakdown as of April 16, 2026:</strong><br>
-        <strong>263 Active</strong> — warranty dates on file and current (87.1%)<br>
-        <strong>38 No Warranty Data</strong> — no dates ever recorded; coverage unverified (12.6%)<br>
-        <strong>1 Expired</strong> — warranty end date confirmed lapsed, $0 material value recorded (0.3%)<br><br>
-        The portfolio is in strong shape from a coverage standpoint. The primary action item is the 38 undocumented projects — a documentation problem, not a coverage problem.
+        <strong>142 workmanship warranties expired — largely expected and normal.</strong><br><br>
+        Workmanship covers installation quality and runs 1–5 years. For a portfolio with projects dating to 2017–2019, most will have expired by design. Not a red flag unless a specific installation defect claim is being pursued.<br><br>
+        5 projects still have active workmanship coverage. 5 are expiring within 90 days — worth confirming any open punch list items before the term ends.
+        <span class="calc">150 projects have no workmanship date on file.</span>
       </div>
     </div>
+
   </div>
 
 
-  <div class="chart-row r2">
+  <div class="chart-row r2e" style="margin-bottom:16px">
     <div class="chart-card">
-      <div class="chart-title">Warranty Status Distribution</div>
-      <div class="chart-insight">Portfolio is <em>86% active</em>. The amber segment (38 projects) reflects missing documentation — not necessarily lapsed coverage.</div>
-      <div style="position:relative;height:210px"><canvas id="donutChart"></canvas></div>
-      <div class="chart-context"><strong>How to read this:</strong> Green = confirmed active coverage. Amber ("No Warranty Data") = dates were never entered — requires verification. Red = dates were filed and have expired. The count in the center is total projects in the portfolio.</div>
+      <div class="chart-title">Coverage Status by Warranty Type</div>
+      <div class="chart-insight">Racking and Foundation are <em>nearly all active</em> — the long-duration structural warranties are in good shape. Workmanship (short-term, 1–5 yrs) and Component (5–10 yrs) show significant expiry — expected for older projects.</div>
+      <div style="position:relative;height:230px"><canvas id="typeChart"></canvas></div>
+      <div class="chart-context"><strong>How to read this:</strong> Each group of bars represents one warranty type. Green = active, amber = expiring within 90 days, red = expired, gray = no date on file. <strong>Workmanship expiry is expected and normal</strong> — these are short-term installation quality warranties that run 1–5 years. Component expiry (5–10 yr terms) is more noteworthy. Racking and Foundation expiry on active projects is the most critical signal. "No Data" means dates were never entered.</div>
     </div>
     <div class="chart-card">
       <div class="chart-title">Expiration Timeline — Next 24 Months</div>
-      <div class="chart-insight">No warranties expire within the next 90 days. The first cluster of <em>9 expirations</em> arrives Oct–Nov 2027.</div>
-      <div style="position:relative;height:210px"><canvas id="timelineChart"></canvas></div>
-      <div class="chart-context"><strong>How to read this:</strong> Each bar shows how many project warranties reach their latest end date in that month. The shaded red band marks the critical 90-day renewal window from today. Bars outside the red band provide adequate runway for proactive action. Each bar represents the <em>longest</em> warranty type for that project (e.g. a 20-year racking warranty, not the shorter workmanship term).</div>
+      <div class="chart-insight"><em>11 projects</em> have a warranty type expiring within 90 days — including Blue Ridge Power Foxglove ($25.8M material). First racking/foundation cluster arrives Oct–Nov 2027.</div>
+      <div style="position:relative;height:230px"><canvas id="timelineChart"></canvas></div>
+      <div class="chart-context"><strong>How to read this:</strong> Each bar shows how many project warranties reach their latest end date in that month. The shaded red band marks the critical 90-day window from today. <strong>Note:</strong> the 11 projects expiring within 90 days are component or workmanship type — the long-duration racking warranties are not yet approaching expiry.</div>
     </div>
   </div>
 
@@ -260,16 +261,17 @@
 <!-- PAGE 2 -->
 <div id="page-risk" class="page">
   <div class="narrative">
-    The following <strong>39 projects</strong> represent the highest combined financial and warranty risk in the portfolio.
-    <strong>38 have no warranty data on file</strong> — this is primarily a <em>documentation gap</em>, not a confirmed coverage lapse.
-    <strong>1 is confirmed expired</strong> — with $0 material value recorded in the dataset.
+    This table surfaces the highest-priority warranty issues across the portfolio — ranked by severity.
+    <strong>2 projects have expired racking warranties</strong> (critical — structural coverage lapsed).
+    <strong>11 projects</strong> have a warranty type expiring within 90 days.
+    <strong>38 projects</strong> have no warranty documentation on file at all.
     <span style="display:block;margin-top:6px;font-size:11.5px;color:var(--muted);">Negative days remaining = coverage already lapsed. "—" = no warranty date was ever recorded in the system.</span>
   </div>
 
   <!-- Why No Warranty Data = Risk Flag -->
   <div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-left:3px solid var(--amber);border-radius:0 6px 6px 0;padding:14px 18px;margin-bottom:20px;font-size:13px;line-height:1.65;color:var(--text);">
     <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--amber);margin-bottom:8px;">⚠ Why "No Warranty Data" Is Flagged as Risk</div>
-    <p style="margin-bottom:8px;">These 38 projects are flagged not because their warranties are definitively expired, but because <strong>no documentation exists in the system to confirm active coverage</strong>. In the absence of a recorded warranty end date, there is no way to verify whether a claim would be honored if a failure occurred today.</p>
+    <p style="margin-bottom:8px;">These 38 projects are flagged because, but because <strong>no documentation exists in the system to confirm active coverage</strong>. In the absence of a recorded warranty end date, there is no way to verify whether a claim would be honored if a failure occurred today.</p>
     <p style="margin-bottom:8px;">In practice, <strong>some form of warranty language almost certainly exists</strong> — whether in a purchase order, sales agreement, or manufacturer terms — even if it was never formally entered here. However, without that documentation on file, Terrasmart cannot readily defend its coverage position in a dispute, audit, or insurance review.</p>
     <p style="color:var(--muted);font-size:12px;"><strong style="color:var(--slate);">Recommended action:</strong> For each of the 38 projects, locate the original PO or sales agreement, confirm what warranty language was included, and enter the effective dates. This converts an unverifiable risk into a documented, auditable position — without necessarily changing the underlying coverage.</p>
   </div>
@@ -298,7 +300,7 @@
 
   <div class="filter-bar">
     <label>Status</label>
-    <select id="filterStatus" onchange="renderTable()"><option value="">All</option><option value="Expired">Expired</option><option value="No Warranty Data">No Warranty Data</option></select>
+    <select id="filterStatus" onchange="renderTable()"><option value="">All</option><option value="Critical — Racking Expired">Critical — Racking Expired</option><option value="Expiring Soon">Expiring Soon</option><option value="No Warranty Data">No Warranty Data</option></select>
     <label>Product</label>
     <select id="filterProduct" onchange="renderTable()"><option value="">All</option><option>TerraTrak</option><option>SunFlower</option><option>Wave</option><option>Agile</option><option>Fuse</option></select>
     <label>Search</label>
@@ -318,8 +320,11 @@
           <th onclick="sortTable('project')">Project</th>
           <th onclick="sortTable('pl')">Product Line</th>
           <th onclick="sortTable('mat')">POS Material ↕</th>
-          <th onclick="sortTable('days')" title="Calendar days until the latest warranty end date (across Racking, Foundation, Workmanship). Negative = lapsed. — = no date recorded.">Days Remaining ⓘ</th>
-          <th onclick="sortTable('status')">Status</th>
+          <th>Racking</th>
+          <th>Foundation</th>
+          <th>Workmanship</th>
+          <th>Component</th>
+          <th onclick="sortTable('worst')">Priority</th>
         </tr></thead>
         <tbody id="riskTableBody"></tbody>
       </table>
@@ -333,8 +338,10 @@
     </div>
     <div style="padding:10px 20px 14px;border-top:1px solid var(--border);">
       <div class="legend-row">
-        <div class="legend-item"><div class="ldot" style="background:rgba(239,68,68,.35)"></div>Expired — warranty end date confirmed lapsed</div>
-        <div class="legend-item"><div class="ldot" style="background:rgba(245,158,11,.3)"></div>No Warranty Data — no dates on file; coverage status unverified</div>
+        <div class="legend-item"><div class="ldot" style="background:rgba(239,68,68,.35)"></div>Critical — racking or foundation coverage lapsed</div>
+        <div class="legend-item"><div class="ldot" style="background:rgba(245,158,11,.4)"></div>Expiring Soon — a warranty type expires within 90 days</div>
+        <div class="legend-item"><div class="ldot" style="background:rgba(245,158,11,.15)"></div>No Warranty Data — no dates on file for any type</div>
+        <div class="legend-item" style="font-size:11px;color:var(--slate);font-weight:500">✓ = Active &nbsp; ! = Expiring &nbsp; ✕ = Expired &nbsp; — = No date filed</div>
       </div>
     </div>
   </div>
@@ -381,27 +388,38 @@ const DATA={
     {b:84,s:"Active",c:22},{b:90,s:"Active",c:13},{b:96,s:"Active",c:2},{b:102,s:"Active",c:10},{b:162,s:"Active",c:1}
   ],
   atRisk:[
-    {job:217422,customer:"Nexamp",project:"Bangor 12296 Solar",pl:"TerraTrak",mat:3003040,sales:3673716,margin:18.3,days:null,status:"No Warranty Data"},
-    {job:194697,customer:"NextEra",project:"Sorrell Hill II",pl:"TerraTrak",mat:2182883,sales:2182883,margin:0,days:null,status:"No Warranty Data"},
-    {job:2225393,customer:"ReVision Energy",project:"Kingston Solar",pl:"TerraTrak",mat:1858598,sales:2324412,margin:20.0,days:null,status:"No Warranty Data"},
-    {job:194676,customer:"NextEra",project:"Avon Solar",pl:"TerraTrak",mat:1791635,sales:1860372,margin:3.7,days:null,status:"No Warranty Data"},
-    {job:2326463,customer:"Navisun",project:"Southwick",pl:"TerraTrak",mat:1776538,sales:2164950,margin:17.9,days:null,status:"No Warranty Data"},
-    {job:2431259,customer:"Pure Power",project:"South Boston",pl:"TerraTrak",mat:1741471,sales:2706099,margin:35.6,days:null,status:"No Warranty Data"},
-    {job:2430504,customer:"Davis Hill Dev",project:"St Croix Farm",pl:"TerraTrak",mat:1671341,sales:3218516,margin:48.1,days:null,status:"No Warranty Data"},
-    {job:207242,customer:"Nexamp",project:"Waddingham Rd",pl:"TerraTrak",mat:1612961,sales:2177198,margin:25.9,days:null,status:"No Warranty Data"},
-    {job:1990051,customer:"Narenco",project:"Tamworth",pl:"SunFlower",mat:1589473,sales:1600858,margin:0.7,days:-396,status:"Expired"},
-    {job:2329158,customer:"ACE Solar",project:"Afton Solar",pl:"TerraTrak",mat:1532232,sales:1532232,margin:0,days:null,status:"No Warranty Data"},
-    {job:2432752,customer:"Pfister Energy",project:"GSPP West",pl:"TerraTrak",mat:1479657,sales:2733368,margin:45.9,days:null,status:"No Warranty Data"},
-    {job:2328581,customer:"Empire Valorize",project:"Ransom Farm",pl:"TerraTrak",mat:1478961,sales:2517892,margin:41.3,days:null,status:"No Warranty Data"},
-    {job:207320,customer:"Nexamp",project:"Palatine Caswell",pl:"TerraTrak",mat:1346759,sales:1949075,margin:30.9,days:null,status:"No Warranty Data"},
-    {job:2130104,customer:"Greenspark",project:"Green Lakes",pl:"Wave",mat:1154725,sales:1676443,margin:31.1,days:-1451,status:"Expired"},
-    {job:194315,customer:"EcoPower Finance",project:"Rio Arriba",pl:"TerraTrak",mat:999892,sales:999892,margin:0,days:null,status:"No Warranty Data"},
-    {job:194428,customer:"Hep Petra",project:"Limelight",pl:"TerraTrak",mat:979781,sales:979781,margin:0,days:null,status:"No Warranty Data"},
-    {job:194386,customer:"NextEra",project:"Mt. Morris",pl:"TerraTrak",mat:833450,sales:833450,margin:0,days:null,status:"No Warranty Data"},
-    {job:194279,customer:"Hep Petra",project:"White Street Greensboro",pl:"TerraTrak",mat:480556,sales:480556,margin:0,days:null,status:"No Warranty Data"},
-    {job:205940,customer:"Cenergy",project:"Rockford CS1",pl:"TerraTrak",mat:0,sales:0,margin:null,days:null,status:"No Warranty Data"},
-    {job:205974,customer:"Cenergy",project:"Rockford CS2",pl:"TerraTrak",mat:0,sales:0,margin:null,days:null,status:"No Warranty Data"}
+    // Priority 0: Critical - Racking/Foundation expired
+    {job:'1990051',customer:'Narenco',project:'Tamworth',pl:'SunFlower',mat:1589473,contract:'Self Performed',racking:'Expired',foundation:'Active',workmanship:'Expired',component:'Expired',worst:'Critical — Racking Expired',days:-1857},
+    {job:'2130104',customer:'Greenspark',project:'Green Lakes',pl:'Wave',mat:1154725,contract:'Self Performed',racking:'Expired',foundation:'No Data',workmanship:'Expired',component:'No Data',worst:'Critical — Racking Expired',days:-1451},
+    // Priority 1: Expiring soon (sorted by days)
+    {job:'2329324',customer:'Active Solar Dev',project:'Cortlandville Solar',pl:'TerraTrak',mat:1718662,contract:'Self Performed',racking:'Active',foundation:'Active',workmanship:'Expiring Soon',component:'No Data',worst:'Expiring Soon',days:9},
+    {job:'194299',customer:'Nexamp',project:'3232 W. Main Batavia',pl:'TerraTrak',mat:279633,contract:'Self Performed',racking:'Active',foundation:'Active',workmanship:'Expired',component:'Expiring Soon',worst:'Expiring Soon',days:14},
+    {job:'2327091',customer:'Blue Ridge Power',project:'Foxglove',pl:'TerraTrak',mat:25776867,contract:'Self Performed',racking:'Active',foundation:'Active',workmanship:'Expiring Soon',component:'No Data',worst:'Expiring Soon',days:14},
+    {job:'194687',customer:'NextEra',project:'Norwich Solar',pl:'TerraTrak',mat:1892138,contract:'Self Performed',racking:'Active',foundation:'Active',workmanship:'Expired',component:'Expiring Soon',worst:'Expiring Soon',days:20},
+    {job:'2090002',customer:'GreenGo Energy',project:'Carolina Lily Solar',pl:'SunFlower',mat:1104008,contract:'Self Performed',racking:'Active',foundation:'Active',workmanship:'No Data',component:'Expiring Soon',worst:'Expiring Soon',days:27},
+    {job:'2326525',customer:'Nexamp',project:'26144 Cross Road',pl:'TerraTrak',mat:707090,contract:'Self Performed',racking:'Active',foundation:'Active',workmanship:'Expiring Soon',component:'No Data',worst:'Expiring Soon',days:32},
+    {job:'2431282',customer:'Nexamp',project:'84576 Southern Gateway',pl:'TerraTrak',mat:2124834,contract:'Self Performed',racking:'Active',foundation:'Active',workmanship:'Expiring Soon',component:'No Data',worst:'Expiring Soon',days:35},
+    {job:'2432250',customer:'Madison Energy Inv',project:'Trotting Park',pl:'TerraTrak',mat:417752,contract:'Self Performed',racking:'Active',foundation:'Active',workmanship:'Expiring Soon',component:'No Data',worst:'Expiring Soon',days:65},
+    {job:'2090032',customer:'Third Sun Solar',project:'KSU Ashtabula',pl:'Wave',mat:141932,contract:'Self Performed',racking:'Active',foundation:'Active',workmanship:'Expired',component:'Expiring Soon',worst:'Expiring Soon',days:70},
+    {job:'2190004',customer:'Speir Innovation',project:'Smithville Solar',pl:'TerraTrak',mat:306270,contract:'Self Performed',racking:'Active',foundation:'Active',workmanship:'Expired',component:'Expiring Soon',worst:'Expiring Soon',days:75},
+    // Priority 2: No warranty data (top by mat value)
+    {job:'217422',customer:'Nexamp',project:'Bangor 12296 Solar',pl:'TerraTrak',mat:3003040,contract:'Self Performed',racking:'No Data',foundation:'No Data',workmanship:'No Data',component:'No Data',worst:'No Warranty Data',days:null},
+    {job:'194697',customer:'NextEra',project:'Sorrell Hill II',pl:'TerraTrak',mat:2182883,contract:'Self Performed',racking:'No Data',foundation:'No Data',workmanship:'No Data',component:'No Data',worst:'No Warranty Data',days:null},
+    {job:'2225393',customer:'ReVision Energy',project:'Kingston Solar',pl:'TerraTrak',mat:1858598,contract:'Self Performed',racking:'No Data',foundation:'No Data',workmanship:'No Data',component:'No Data',worst:'No Warranty Data',days:null},
+    {job:'194676',customer:'NextEra',project:'Avon Solar',pl:'TerraTrak',mat:1791635,contract:'Self Performed',racking:'No Data',foundation:'No Data',workmanship:'No Data',component:'No Data',worst:'No Warranty Data',days:null},
+    {job:'2326463',customer:'Navisun',project:'Southwick',pl:'TerraTrak',mat:1776538,contract:'Self Performed',racking:'No Data',foundation:'No Data',workmanship:'No Data',component:'No Data',worst:'No Warranty Data',days:null},
+    {job:'2431259',customer:'Pure Power',project:'South Boston',pl:'TerraTrak',mat:1741471,contract:'Self Performed',racking:'No Data',foundation:'No Data',workmanship:'No Data',component:'No Data',worst:'No Warranty Data',days:null},
+    {job:'2430504',customer:'Davis Hill Dev',project:'St Croix Farm',pl:'TerraTrak',mat:1671341,contract:'Self Performed',racking:'No Data',foundation:'No Data',workmanship:'No Data',component:'No Data',worst:'No Warranty Data',days:null},
+    {job:'207242',customer:'Nexamp',project:'Waddingham Rd',pl:'TerraTrak',mat:1612961,contract:'Self Performed',racking:'No Data',foundation:'No Data',workmanship:'No Data',component:'No Data',worst:'No Warranty Data',days:null},
+    {job:'2329158',customer:'ACE Solar',project:'Afton Solar',pl:'TerraTrak',mat:1532232,contract:'Self Performed',racking:'No Data',foundation:'No Data',workmanship:'No Data',component:'No Data',worst:'No Warranty Data',days:null},
+    {job:'2432752',customer:'Pfister Energy',project:'GSPP West',pl:'TerraTrak',mat:1479657,contract:'Self Performed',racking:'No Data',foundation:'No Data',workmanship:'No Data',component:'No Data',worst:'No Warranty Data',days:null},
+    {job:'2328581',customer:'Empire Valorize',project:'Ransom Farm',pl:'TerraTrak',mat:1478961,contract:'Self Performed',racking:'No Data',foundation:'No Data',workmanship:'No Data',component:'No Data',worst:'No Warranty Data',days:null},
+    {job:'207320',customer:'Nexamp',project:'Palatine Caswell',pl:'TerraTrak',mat:1346759,contract:'Self Performed',racking:'No Data',foundation:'No Data',workmanship:'No Data',component:'No Data',worst:'No Warranty Data',days:null},
+    {job:'194315',customer:'EcoPower Finance',project:'Rio Arriba',pl:'TerraTrak',mat:999892,contract:'Self Performed',racking:'No Data',foundation:'No Data',workmanship:'No Data',component:'No Data',worst:'No Warranty Data',days:null},
+    {job:'194386',customer:'NextEra',project:'Mt. Morris',pl:'TerraTrak',mat:833450,contract:'Self Performed',racking:'No Data',foundation:'No Data',workmanship:'No Data',component:'No Data',worst:'No Warranty Data',days:null},
+    {job:'194428',customer:'Hep Petra',project:'Limelight',pl:'TerraTrak',mat:979781,contract:'Self Performed',racking:'No Data',foundation:'No Data',workmanship:'No Data',component:'No Data',worst:'No Warranty Data',days:null}
   ],
+
   matrix:[
     {pl:"TerraTrak",count:107,pct:26.2,exposure:29321958,pos:182101457},
     {pl:"SunFlower",count:149,pct:1.3,exposure:882105,pos:133728126},
@@ -434,24 +452,40 @@ function toggleTip(e,id){
 }
 document.addEventListener('click',()=>{if(openTip){openTip.classList.remove('visible');openTip=null;}});
 
-// DONUT
-new Chart(document.getElementById('donutChart'),{
-  type:'doughnut',
-  data:{labels:['Active','No Warranty Data','Expired'],datasets:[{
-    data:[263,38,1],backgroundColor:['rgba(34,197,94,.8)','rgba(245,158,11,.75)','rgba(239,68,68,.8)'],
-    borderColor:'#0c0f14',borderWidth:3,hoverOffset:6
-  }]},
-  options:{responsive:true,maintainAspectRatio:false,cutout:'68%',
-    plugins:{legend:{position:'bottom',labels:{padding:14,boxWidth:10,color:'#94a3b8'}},
-      tooltip:{callbacks:{label:c=>` ${c.label}: ${c.raw} (${(c.raw/302*100).toFixed(1)}%)`}}}},
-  plugins:[{id:'center',afterDraw(ch){
-    const{ctx,chartArea:{width,height,left,top}}=ch;ctx.save();
-    ctx.textAlign='center';ctx.textBaseline='middle';
-    const cx=left+width/2,cy=top+height/2;
-    ctx.font="bold 26px 'DM Serif Display',serif";ctx.fillStyle='#e2e8f0';ctx.fillText('302',cx,cy-10);
-    ctx.font="10px 'IBM Plex Mono',monospace";ctx.fillStyle='#64748b';ctx.fillText('PROJECTS',cx,cy+13);ctx.restore();
-  }}]
-});
+// WARRANTY TYPE GROUPED BAR
+(()=>{
+  const ctx=document.getElementById('typeChart').getContext('2d');
+  const types=['Racking','Foundation','Workmanship','Component'];
+  const lifespans=['10–25 yrs','10–25 yrs','1–5 yrs','5–10 yrs'];
+  const active=   [261, 263,   5,  84];
+  const expiring= [  0,   0,   5,   6];
+  const expired=  [  2,   0, 142, 128];
+  const nodata=   [ 39,  39, 150,  84];
+  new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:types.map((t,i)=>`${t} (${lifespans[i]})`),
+      datasets:[
+        {label:'Active',          data:active,   backgroundColor:'rgba(34,197,94,.75)',  borderRadius:3},
+        {label:'Expiring ≤90 days',data:expiring, backgroundColor:'rgba(245,158,11,.85)', borderRadius:3},
+        {label:'Expired',         data:expired,  backgroundColor:'rgba(239,68,68,.7)',   borderRadius:3},
+        {label:'No Date on File', data:nodata,   backgroundColor:'rgba(100,116,139,.5)', borderRadius:3}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      scales:{
+        x:{grid:{display:false}},
+        y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{precision:0},
+           title:{display:true,text:'Project Count',color:'#64748b',font:{size:10}}}
+      },
+      plugins:{
+        legend:{position:'bottom',labels:{padding:12,boxWidth:10,color:'#94a3b8',font:{size:10}}},
+        tooltip:{callbacks:{label:t=>` ${t.dataset.label}: ${t.raw} projects`}}
+      }
+    }
+  });
+})();
 
 // TIMELINE
 (()=>{
@@ -548,17 +582,35 @@ new Chart(document.getElementById('exposureChart'),{type:'bar',
 // RISK TABLE
 let tData=[...DATA.atRisk],sKey='mat',sDir=-1,pg=0;const PG=10;
 function sortTable(k){if(sKey===k)sDir*=-1;else{sKey=k;sDir=-1;}pg=0;renderTable();}
+
+function statusTag(s){
+  if(s==='Active')      return `<span style="font-size:10px;color:var(--green);font-family:'IBM Plex Mono',monospace">✓</span>`;
+  if(s==='Expiring Soon') return `<span style="font-size:10px;color:var(--amber);font-family:'IBM Plex Mono',monospace;font-weight:700">!</span>`;
+  if(s==='Expired')     return `<span style="font-size:10px;color:var(--red);font-family:'IBM Plex Mono',monospace">✕</span>`;
+  return `<span style="font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace">—</span>`;
+}
+
 function renderTable(){
   const sf=document.getElementById('filterStatus').value;
   const pf=document.getElementById('filterProduct').value;
   const q=(document.getElementById('filterSearch').value||'').toLowerCase();
   let f=tData.filter(d=>{
-    if(sf&&d.status!==sf)return false;
+    if(sf&&d.worst!==sf)return false;
     if(pf&&d.pl!==pf)return false;
     if(q&&!d.customer.toLowerCase().includes(q)&&!d.project.toLowerCase().includes(q))return false;
     return true;
   });
-  f.sort((a,b)=>{const av=a[sKey],bv=b[sKey];if(av==null)return 1;if(bv==null)return-1;return(av<bv?-1:av>bv?1:0)*sDir;});
+  f.sort((a,b)=>{
+    if(sKey==='worst'){
+      const ord={'Critical — Racking Expired':0,'Expiring Soon':1,'No Warranty Data':2,'Component Expired':3,'Workmanship Expired':4};
+      const diff=(ord[a.worst]??5)-(ord[b.worst]??5);
+      if(diff!==0)return diff*sDir;
+      return (b.mat||0)-(a.mat||0);
+    }
+    const av=a[sKey],bv=b[sKey];
+    if(av==null)return 1;if(bv==null)return-1;
+    return(av<bv?-1:av>bv?1:0)*sDir;
+  });
   const tot=f.length,st=pg*PG,sl=f.slice(st,st+PG);
   document.getElementById('pageInfo').textContent=`${st+1}–${Math.min(st+PG,tot)} of ${tot} projects`;
   document.getElementById('btnPrev').disabled=pg===0;
@@ -566,11 +618,29 @@ function renderTable(){
   const body=document.getElementById('riskTableBody');body.innerHTML='';
   sl.forEach(d=>{
     const tr=document.createElement('tr');
-    tr.className=d.status==='Expired'?'row-expired':'row-nodata';
-    const tc=d.status==='Expired'?'tag-expired':'tag-nodata';
-    const tl=d.status==='Expired'?'EXPIRED':'NO DATA';
-    const dh=d.days===null?`<span style="color:var(--muted)" title="No warranty date on file">—</span>`:d.days<0?`<span style="color:var(--red)" title="Lapsed ${Math.abs(d.days)} days ago">${d.days}d</span>`:`${d.days}d`;
-    tr.innerHTML=`<td style="font-family:'IBM Plex Mono',monospace;color:var(--muted);font-size:11px">${d.job}</td><td style="font-weight:500">${d.customer}</td><td style="color:var(--slate)">${d.project}</td><td><span style="font-size:11px;background:rgba(56,189,248,.1);color:var(--accent);padding:2px 7px;border-radius:3px">${d.pl}</span></td><td style="font-family:'IBM Plex Mono',monospace;font-size:12px">${d.mat>0?fmt$(d.mat):'—'}</td><td style="font-family:'IBM Plex Mono',monospace;font-size:12px">${dh}</td><td><span class="tag ${tc}">${tl}</span></td>`;
+    if(d.worst==='Critical — Racking Expired') tr.className='row-expired';
+    else if(d.worst==='Expiring Soon') tr.style.background='rgba(245,158,11,.08)';
+    else if(d.worst==='No Warranty Data') tr.className='row-nodata';
+
+    const worstTag = d.worst==='Critical — Racking Expired'
+      ? `<span class="tag tag-expired">CRITICAL</span>`
+      : d.worst==='Expiring Soon'
+      ? `<span class="tag tag-expiring">${d.days!=null?d.days+'d LEFT':'EXPIRING'}</span>`
+      : d.worst==='No Warranty Data'
+      ? `<span class="tag tag-nodata">NO DATA</span>`
+      : `<span class="tag" style="background:rgba(245,158,11,.1);color:var(--amber)">${d.worst.replace(' Expired','')}</span>`;
+
+    tr.innerHTML=`
+      <td style="font-family:'IBM Plex Mono',monospace;color:var(--muted);font-size:11px">${d.job}</td>
+      <td style="font-weight:500">${d.customer}</td>
+      <td style="color:var(--slate)">${d.project}</td>
+      <td><span style="font-size:11px;background:rgba(56,189,248,.1);color:var(--accent);padding:2px 7px;border-radius:3px">${d.pl}</span></td>
+      <td style="font-family:'IBM Plex Mono',monospace;font-size:12px">${d.mat>0?fmt$(d.mat):'—'}</td>
+      <td style="text-align:center">${statusTag(d.racking)}</td>
+      <td style="text-align:center">${statusTag(d.foundation)}</td>
+      <td style="text-align:center">${statusTag(d.workmanship)}</td>
+      <td style="text-align:center">${statusTag(d.component)}</td>
+      <td>${worstTag}</td>`;
     body.appendChild(tr);
   });
 }
